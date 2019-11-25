@@ -22,15 +22,13 @@ const UPLOAD_TIMEOUT = 60000;
 
 const CONTENT_TYPE = "blogPost";
 const DONE_FILE_PATH = path.join(ASSET_DIR_LIST, "done.json");
-const AUTHOR_FILE_PATH = path.join(USER_DIR_TRANSFORMED, "authors.json");
 const RESULTS_PATH = path.join(POST_DIR_CREATED, "posts.json");
 
 const delay = (dur = API_DELAY_DUR) =>
   new Promise(resolve => setTimeout(resolve, dur));
 
-const createBlogPosts = (posts, assets, authors, client, observer) => {
+const createBlogPosts = (posts, assets, client, observer) => {
   const [inlineMap, heroMap] = createMapsFromAssets(assets);
-  const authorMap = createMapFromAuthors(authors);
 
   return new Promise(complete => {
     const queue = [].concat(posts);
@@ -71,7 +69,7 @@ const createBlogPosts = (posts, assets, authors, client, observer) => {
 
             const created = await client.createEntry(
               CONTENT_TYPE,
-              transform(post, inlineMap, heroMap, authorMap)
+              transform(post, inlineMap, heroMap)
             );
             await delay();
             const published = await created.publish();
@@ -112,7 +110,7 @@ const createBlogPosts = (posts, assets, authors, client, observer) => {
   });
 };
 
-function transform(post, inlineMap, heroMap, authorMap) {
+function transform(post, inlineMap, heroMap) {
   return {
     fields: {
       title: {
@@ -136,17 +134,6 @@ function transform(post, inlineMap, heroMap, authorMap) {
             type: "Link",
             linkType: "Asset",
             id: heroMap.get(post.featured_media)
-          }
-        }
-      },
-      author: {
-        [CONTENTFUL_LOCALE]: {
-          sys: {
-            type: "Link",
-            linkType: "Entry",
-            id: authorMap.has(post.author)
-              ? authorMap.get(post.author)
-              : CONTENTFUL_FALLBACK_USER_ID
           }
         }
       }
@@ -176,14 +163,6 @@ function createMapsFromAssets(assets) {
   return [links, heros];
 }
 
-function createMapFromAuthors(authors) {
-  const map = new Map();
-  authors.forEach(author => {
-    if (author.contentful) map.set(author.wordpress.id, author.contentful.id);
-  });
-  return map;
-}
-
 async function processBlogPosts(client, observer = MOCK_OBSERVER) {
   const files = await findByGlob("*.json", { cwd: POST_DIR_TRANSFORMED });
   const queue = [...files].sort();
@@ -195,12 +174,10 @@ async function processBlogPosts(client, observer = MOCK_OBSERVER) {
   }
 
   const assets = await fs.readJson(DONE_FILE_PATH);
-  const authors = await fs.readJson(AUTHOR_FILE_PATH);
 
   const result = await createBlogPosts(
     posts,
     assets,
-    authors,
     client,
     observer
   );

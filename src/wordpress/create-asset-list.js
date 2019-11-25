@@ -7,6 +7,7 @@ const {
   POST_DIR_TRANSFORMED,
   MOCK_OBSERVER,
   WP_API_URL,
+  WORDPRESS_API_KEY,
   findByGlob
 } = require("../util");
 
@@ -17,7 +18,9 @@ const listOfImagesByPost = async (post, url) => {
   if (post.featured_media) {
     const postId = post.id;
     const mediaNumber = post.featured_media;
-    const response = await fetch(urlById(url, mediaNumber));
+    const response = await fetch(urlById(url, mediaNumber), { headers: {
+      'Authorization': `Bearer ${WORDPRESS_API_KEY}`,
+    }});
     const { status } = response;
     // Save data and move on to the next page
     if (status === 200) {

@@ -7,7 +7,8 @@ const {
   CONTENTFUL_ENV_NAME,
   CONTENTFUL_SPACE_ID,
   CONTENTFUL_LOCALE,
-  CONTENTFUL_FALLBACK_USER_ID
+  CONTENTFUL_FALLBACK_USER_ID,
+  WORDPRESS_API_KEY
 } = require("../util");
 
 const WP_ERR_MSG = `WordPress unreachable at ${WP_API_URL}, check env config and internet connection`;
@@ -16,7 +17,9 @@ const CFUL_ERR_BASE = `No value given for required Contentful config var: `;
 
 async function config() {
   // Ping WP API
-  const response = await fetch(WP_API_URL);
+  const response = await fetch(WP_API_URL, { headers: {
+    'Authorization': `Bearer ${WORDPRESS_API_KEY}`,
+  }});
   if (response.status !== 200) throw new Error(WP_ERR_MSG);
   // We want to strip the base url from the absolute 'from' url's
   // we get back from wordpress and use /relative to /relative as from->to

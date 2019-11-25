@@ -34,7 +34,7 @@ const tasks = new Listr([
       return new Listr([
         {
           title: "Download raw JSON",
-          task: () => downloadUsers()
+          task: () => '' //downloadUsers()
         }
       ]);
     }
@@ -72,7 +72,7 @@ const tasks = new Listr([
         },
         {
           title: "Match WP 'User' to Contentful 'Person'",
-          task: () => createClient().then(matchAuthorTypes)
+          task: () => ''  //createClient().then(matchAuthorTypes)
         },
         {
           title: "Create Posts",
